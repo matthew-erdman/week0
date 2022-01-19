@@ -9,7 +9,7 @@ import csv
 
 def binarySearch(x, L):
     """
-    Purpose: Perform a binary search to find a specified value in a list of lists.
+    Purpose: Perform a binary search to find a specified value in a list.
     Parameters: x - the value to look for, and L - the list to look in.
     Return Value: Boolean indicating if x is in L and the integer index of x.
     """
@@ -19,13 +19,13 @@ def binarySearch(x, L):
     while low <= high:
         mid = (low + high) // 2
 
-        if x == L[mid][0]:       # found x in L
+        if x == L[mid]:       # found x in L
             return True, mid
 
-        elif x > L[mid][0]:      # too low, adjust low bound
+        elif x > L[mid]:      # too low, adjust low bound
             low = mid + 1
 
-        elif x < L[mid][0]:      # too high, adjust high bound
+        elif x < L[mid]:      # too high, adjust high bound
             high = mid - 1
 
     return False, -1              # x is not in L
@@ -108,7 +108,7 @@ def wordCount(words, dictionary):
     wordCounts = []
     for word in words:
         # print(str(len(wordCounts)) + "/16087: " + str(len(wordCounts)*100//16087) + "%", end="\r")
-        if binarySearch(word, dictionary):
+        if binarySearch(word[0], dictionary):
             FOUND = False
             for i in range(len(wordCounts)):
                 if word == wordCounts[i][0]:
@@ -119,7 +119,7 @@ def wordCount(words, dictionary):
 
     return wordCounts
 
-def updateCorpus(fnameCorpus, fnameMobyWords):
+def updateCorpus(fnameCorpus, fnameMobyWords, dictionary):
     """
     Purpose: Merge Moby Dick word counts with corpus and rewrite corpus file.
     Parameters: The filename of the corpus and the Moby Dick word counts.
@@ -132,10 +132,14 @@ def updateCorpus(fnameCorpus, fnameMobyWords):
     corpus.close()
 
     moby = open(fnameMobyWords, 'r')
+    corpusIndex = 0
     for mobyWord in moby:
-        FOUND, index = binarySearch(mobyWord.split(',')[0], corpusWordCounts)
+        FOUND, index = binarySearch(mobyWord.split(',')[0], dictionary)
         if FOUND:
-            corpusWordCounts[index][1] += int(mobyWord.split(',')[1])
+            while mobyWord.split(',')[0] != corpusWordCounts[corpusIndex][0]:
+                corpusIndex += 1
+            corpusWordCounts[corpusIndex][1] += int(mobyWord.split(',')[1])
+            corpusIndex += 1
     moby.close()
 
     writeFile(fnameCorpus, corpusWordCounts)
@@ -153,7 +157,7 @@ def main():
     #     wordCounts = []
     #     for row in csv.reader(i): wordCounts.append(row)
     print("updating...")
-    updateCorpus("wordCounts.txt", "word-count-moby.txt")
+    updateCorpus("wordCounts.txt", "word-count-moby.txt", dictionary)
 
 
 main()
